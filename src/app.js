@@ -18,7 +18,7 @@ app.post('/sms', ({ api, body, set }) => {
     api.interact(body.From, body.To, body, set, null).then((response) => {
       console.log(response)
       set.status = 200
-        return { success: true, response }
+      return { success: true, response, set }
       })
       .catch((error) => {
         set.status = 500
