@@ -15,7 +15,15 @@ app.post('/sms', ({ api, body, set }) => {
   console.log('Webhook received a message')
   console.log(body)
   if (body) {
-    api.interact(body.From, body.To, body, set, null)
+    api.interact(body.From, body.To, body, set, null).then((response) => {
+      console.log(response)
+      set.status = 200
+        return { success: true, response }
+      })
+      .catch((error) => {
+        set.status = 500
+        return { success: false, error: error.message }
+      })
   }
 })
 
