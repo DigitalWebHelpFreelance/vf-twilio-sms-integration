@@ -12,7 +12,7 @@ export const Dialog = {
   interact: async function (from, to, body, set) {
     clearTimeout(noreplyTimeout)
 
-    let requestData = customRequestData || {
+    let requestData = {
       config: {
         tts: false,
         stripSSML: true,
@@ -21,22 +21,21 @@ export const Dialog = {
       },
     }
 
-    if (!customRequestData) {
-      if (!body) {
-        console.log('No Reply')
-        requestData.action = { type: 'no-reply' }
-      } else {
-        requestData.action = { type: 'text', payload: body.Body }
-        if (body?.MediaContentType0?.includes('image')) {
-          console.log('Add media URL')
-          requestData.state = {
-            variables: {
-              imageUrl: body.MediaUrl0,
-            },
-          }
+    if (!body) {
+      console.log('No Reply')
+      requestData.action = { type: 'no-reply' }
+    } else {
+      requestData.action = { type: 'text', payload: body.Body }
+      if (body?.MediaContentType0?.includes('image')) {
+        console.log('Add media URL')
+        requestData.state = {
+          variables: {
+            imageUrl: body.MediaUrl0,
+          },
         }
       }
     }
+
     return axios
       .post(
         `https://general-runtime.voiceflow.com/state/user/${encodeURI(
