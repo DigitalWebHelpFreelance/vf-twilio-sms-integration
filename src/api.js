@@ -55,7 +55,7 @@ export const Dialog = {
             accept: 'application/json',
             'content-type': 'application/json',
             versionID: VOICEFLOW_VERSION_ID,
-            sessionID: from,
+            sessionID: session,
           },
         }
       )
