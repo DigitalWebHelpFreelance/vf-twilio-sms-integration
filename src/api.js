@@ -7,10 +7,14 @@ const VOICEFLOW_PROJECT_ID = Bun.env.VOICEFLOW_PROJECT_ID || null
 let session = `${VOICEFLOW_VERSION_ID}.${createSession()}`
 const client = require('twilio')(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 let noreplyTimeout = null
+const conversationStates = new Map();
 
 export const Dialog = {
   interact: async function (from, to, body, set) {
     clearTimeout(noreplyTimeout)
+    
+    const isNewConversation = !conversationStates.has(from);
+    conversationStates.set(from, true);
 
     let requestData = {
       config: {
@@ -21,7 +25,10 @@ export const Dialog = {
       },
     }
 
-    if (!body) {
+    if (isNewConversation) {
+      await deleteUserState(from);
+      requestData.action = { type: 'launch' };
+    } else if (!body) {
       console.log('No Reply')
       requestData.action = { type: 'no-reply' }
     } else {
@@ -48,7 +55,7 @@ export const Dialog = {
             accept: 'application/json',
             'content-type': 'application/json',
             versionID: VOICEFLOW_VERSION_ID,
-            sessionID: session,
+            sessionID: from,
           },
         }
       )
@@ -197,4 +204,15 @@ async function saveTranscript(username) {
       })
       .catch((err) => console.log(err))
   }
+}
+
+async function deleteUserState(from) {
+  return axios({
+    method: "DELETE",
+    url: `https://general-runtime.voiceflow.com/state/user/${encodeURI(from.substring(1))}`,
+    headers: {
+      Authorization: VOICEFLOW_API_KEY,
+      versionID: VOICEFLOW_VERSION_ID,
+    },
+  });
 }
